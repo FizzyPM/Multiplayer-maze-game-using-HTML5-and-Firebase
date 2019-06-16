@@ -1,17 +1,22 @@
 var game = new Phaser.Game(700, 650, Phaser.CANVAS, "");
+
 var maze = [];
 var mazeWidth = 35;
 var mazeHeight = 32;
 var tileSize = 20;
-var mazeGraphics;
+var mazeGroup;
+// var mazeGraphics;
 
 var GameState = {
      preload: function(){
-     //    this.load.image('background', 'assets/images/background2.png');
+        this.load.image('maze', 'assets/images/maze.png');
+        this.load.image('ball', 'assets/images/ball2.png');
+
      },
      create: function(){
-          // console.log("create");
-          mazeGraphics = game.add.graphics(0, 0);
+          this.game.physics.startSystem(Phaser.Physics.ARCADE);
+          // mazeGraphics = game.add.graphics(0, 0);
+          mazeGroup = game.add.group();
           var moves = [];
           for(var i = 0; i < mazeHeight; i ++){
                maze[i] = [];
@@ -68,26 +73,55 @@ var GameState = {
                     posX = Math.floor(back / mazeWidth);
                     posY = back % mazeWidth;
                }                                 
-          }     
+          }
           this.drawMaze(posX, posY)
+
+          this.ball = this.game.add.sprite(23, 23, 'ball');
+          // console.log(this.ball.width)
+          this.ball.scale.setTo(0.05);
+          this.game.physics.arcade.enable(this.ball);
+
+          this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+          this.rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+          this.upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+          this.downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+          game.input.keyboard.addKeyCapture([ Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.UP, Phaser.Keyboard.DOWN ]);
      },
      update: function(){
+          this.ball.body.velocity.x = 0;
+          this.ball.body.velocity.y = 0;
+          if (this.upKey.isDown){
+               this.ball.body.velocity.y = -200;
+          }
+          if (this.downKey.isDown){
+               this.ball.body.velocity.y = 200;
+          }
+          if (this.leftKey.isDown){
+               this.ball.body.velocity.x = -200;
+          }
+          if (this.rightKey.isDown){
+               this.ball.body.velocity.x = 200;
+          }
+          this.game.physics.arcade.collide(this.ball, mazeGroup);
      },
      drawMaze: function(){
-          // console.log('draw');
-          mazeGraphics.clear();
-          mazeGraphics.beginFill(0xcccccc);
+          // mazeGraphics.clear();
+          // mazeGraphics.beginFill(0xcccccc);
           for(i = 0; i < mazeHeight; i ++){
                for(j = 0; j < mazeWidth; j ++){
                     if(maze[i][j] == 1){
-                         mazeGraphics.drawRect(j * tileSize, i * tileSize, tileSize, tileSize);                 
+                         var mazing = this.game.add.sprite(j * tileSize, i * tileSize, 'maze');
+                         this.game.physics.arcade.enable(mazing);
+                         mazing.body.immovable = true;
+                         mazeGroup.add(mazing);
+                         // mazeGraphics.drawRect(j * tileSize, i * tileSize, tileSize, tileSize);             
                     }
                }
           }
-          mazeGraphics.endFill();
+          this.game.physics.arcade.enable(mazeGroup);
+          // mazeGroup.body.immovable = true;
+          // mazeGraphics.endFill();
      }
 }
 game.state.add('GameState', GameState);
 game.state.start('GameState');
-
-
