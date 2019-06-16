@@ -11,7 +11,6 @@ var GameState = {
      preload: function(){
         this.load.image('maze', 'assets/images/maze.png');
         this.load.image('ball', 'assets/images/ball2.png');
-
      },
      create: function(){
           this.game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -75,11 +74,16 @@ var GameState = {
                }                                 
           }
           this.drawMaze(posX, posY)
+          
+          this.finalTile = this.game.add.sprite(mazeHeight*tileSize+20, mazeWidth*tileSize-120, 'maze');
+          this.finalTile.tint =  0x00CC00;
+          this.game.physics.arcade.enable(this.finalTile);
 
           this.ball = this.game.add.sprite(23, 23, 'ball');
-          // console.log(this.ball.width)
           this.ball.scale.setTo(0.05);
           this.game.physics.arcade.enable(this.ball);
+          // console.log(this.ball.width)
+          // this.ball.tint = Math.random() * 0xffffff;
 
           this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
           this.rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
@@ -103,6 +107,11 @@ var GameState = {
                this.ball.body.velocity.x = 200;
           }
           this.game.physics.arcade.collide(this.ball, mazeGroup);
+          this.game.physics.arcade.overlap(this.ball, this.finalTile, this.gameOver, null, this);
+     },
+     gameOver: function(){
+          alert('You Won');
+          window.location.reload(true);
      },
      drawMaze: function(){
           // mazeGraphics.clear();
