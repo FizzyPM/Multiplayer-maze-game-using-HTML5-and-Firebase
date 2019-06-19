@@ -6,21 +6,54 @@ var mazeHeight = 32;
 var tileSize = 20;
 var mazeGroup;
 var upPressed = 0, downPressed = 0, leftPressed = 0, rightPressed = 0;
-// var temp=0;
+var flag = 0;
+var oldMaze = [];
 // var mazeGraphics;
 
+const firebaseConfig = {
+     apiKey: "AIzaSyAEgMVgA1Tgz9x72ERhi0BeDL-VzuCWO9Y",
+     authDomain: "fizzy-maze.firebaseapp.com",
+     databaseURL: "https://fizzy-maze.firebaseio.com",
+     projectId: "fizzy-maze",
+     storageBucket: "",
+     messagingSenderId: "30587461871",
+     appId: "1:30587461871:web:dd7993cf58bc43b5"
+};
+var firedb = firebase.initializeApp(firebaseConfig);
+
 var GameState = {
-     preload: function(){
-          this.load.image('maze', 'assets/images/maze.png');
-          this.load.image('ball', 'assets/images/ball2.png');
-          this.load.spritesheet('cursorbutton', 'assets/images/arrowkey.png', 70, 70);
-     },
      create: function(){
           this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
           this.scale.pageAlignHorizontally = true;
           this.scale.pageAlignVertically = true;
           this.game.physics.startSystem(Phaser.Physics.ARCADE);
           // mazeGraphics = game.add.graphics(0, 0);
+
+          firedb.database().ref('seed').once('value').then(function(snap){
+               // console.log(snap.val());
+               if(snap.val()!= null){
+                    console.log('yes');
+                    game.state.start('MazeState', false, false, 1, snap.val());
+               }
+               else{
+                    console.log('no');
+                    game.state.start('MazeState', false, false);
+               }
+          });
+     }
+}
+var MazeState = {
+     init: function(status, values){
+          if(status){
+               flag = 1;
+               oldMaze = (values).split(" ");
+               // console.log((values.posmove).split(" "));
+          }
+     },
+     preload: function(){
+          this.load.image('maze', 'assets/images/maze.png');
+     },
+     create: function(){
           mazeGroup = game.add.group();
           var moves = [];
           for(var i = 0; i < mazeHeight; i ++){
@@ -32,8 +65,11 @@ var GameState = {
           var posX = 1;
           var posY = 1;
           maze[posX][posY] = 0; 
-          moves.push(posY + posY * mazeWidth);          
-          while(moves.length){       
+          moves.push(posY + posY * mazeWidth);
+
+          var posmove = '';
+          var oldMazeindx = 0;
+          while(moves.length){  
                var possibleDirections = "";
                if(posX+2 > 0 && posX + 2 < mazeHeight - 1 && maze[posX + 2][posY] == 1){
                     possibleDirections += "S";
@@ -46,9 +82,16 @@ var GameState = {
                }
                if(posY+2 > 0 && posY + 2 < mazeWidth - 1 && maze[posX][posY + 2] == 1){
                     possibleDirections += "E";
-               } 
+               }    
                if(possibleDirections){
-                    var move = game.rnd.between(0, possibleDirections.length - 1);
+                    if(flag == 1){
+                         var move = Number(oldMaze[oldMazeindx]);
+                         oldMazeindx++;
+                    }
+                    else{
+                         var move = game.rnd.between(0, possibleDirections.length - 1);
+                         posmove = posmove + String(move) + ' ';
+                    }
                     switch (possibleDirections[move]){
                          case "N": 
                               maze[posX - 2][posY] = 0;
@@ -77,10 +120,40 @@ var GameState = {
                     var back = moves.pop();
                     posX = Math.floor(back / mazeWidth);
                     posY = back % mazeWidth;
-               }                                 
+               } 
           }
-          this.drawMaze(posX, posY)
-          
+          if(flag!= 1) firedb.database().ref('seed').set(posmove);
+ 
+          this.drawMaze(posX, posY);
+          game.state.start('PlayState', false, false);
+
+     },
+     drawMaze: function(){
+          // mazeGraphics.clear();
+          // mazeGraphics.beginFill(0xcccccc);
+          for(i = 1; i <= mazeHeight; i ++){
+               for(j = 1; j <= mazeWidth; j ++){
+                    if(maze[i-1][j-1] == 1){
+                         var mazing = this.game.add.sprite(j * tileSize, i * tileSize, 'maze');
+                         this.game.physics.arcade.enable(mazing);
+                         mazing.body.immovable = true;
+                         mazeGroup.add(mazing);
+                         // mazeGraphics.drawRect(j * tileSize, i * tileSize, tileSize, tileSize);  
+                    }
+               }
+          }
+          this.game.physics.arcade.enable(mazeGroup);
+          // console.log('yes');
+          // mazeGroup.body.immovable = true;
+          // mazeGraphics.endFill();
+     }
+}
+var PlayState = {
+     preload: function(){
+          this.load.image('ball', 'assets/images/ball2.png');
+          this.load.spritesheet('cursorbutton', 'assets/images/arrowkey.png', 70, 70);
+     },
+     create: function(){
           this.finalTile = this.game.add.sprite(mazeHeight*tileSize+40, mazeWidth*tileSize-100, 'maze');
           this.finalTile.tint =  0x00CC00;
           this.game.physics.arcade.enable(this.finalTile);
@@ -157,28 +230,13 @@ var GameState = {
           // temp+=1;
      },
      gameOver: function(){
+          firedb.database().ref('seed').remove();
           this.ball.destroy();
           alert('You Won');
           window.location.reload(true);
      },
-     drawMaze: function(){
-          // mazeGraphics.clear();
-          // mazeGraphics.beginFill(0xcccccc);
-          for(i = 1; i <= mazeHeight; i ++){
-               for(j = 1; j <= mazeWidth; j ++){
-                    if(maze[i-1][j-1] == 1){
-                         var mazing = this.game.add.sprite(j * tileSize, i * tileSize, 'maze');
-                         this.game.physics.arcade.enable(mazing);
-                         mazing.body.immovable = true;
-                         mazeGroup.add(mazing);
-                         // mazeGraphics.drawRect(j * tileSize, i * tileSize, tileSize, tileSize);             
-                    }
-               }
-          }
-          this.game.physics.arcade.enable(mazeGroup);
-          // mazeGroup.body.immovable = true;
-          // mazeGraphics.endFill();
-     }
 }
 game.state.add('GameState', GameState);
+game.state.add('PlayState', PlayState);
+game.state.add('MazeState', MazeState);
 game.state.start('GameState');
