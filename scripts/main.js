@@ -167,24 +167,24 @@ var PlayState = {
 
           cursors = game.input.keyboard.createCursorKeys();
           
-          this.upkey = game.add.button(360, 745, 'cursorbutton', this.resetUpClick, this, 2, 1, 0);
+          this.upkey = game.add.button(360, 765, 'cursorbutton', this.resetUpClick, this, 2, 1, 0);
           this.upkey.anchor.setTo(0.5);
           this.upkey.scale.setTo(1.2); 
           this.upkey.onInputDown.add(function() { upPressed=1; }, this);
 
-          this.downkey = game.add.button(360, 875, 'cursorbutton', this.resetDownClick, this, 2, 1, 0);
+          this.downkey = game.add.button(360, 855, 'cursorbutton', this.resetDownClick, this, 2, 1, 0);
           this.downkey.anchor.setTo(0.5);
           this.downkey.angle = 180;
           this.downkey.scale.setTo(1.2);
           this.downkey.onInputDown.add(function() { downPressed=1; }, this);
 
-          this.leftkey = game.add.button(230, 810, 'cursorbutton', this.resetLeftClick, this, 2, 1, 0);
+          this.leftkey = game.add.button(250, 810, 'cursorbutton', this.resetLeftClick, this, 2, 1, 0);
           this.leftkey.anchor.setTo(0.5);
           this.leftkey.angle = -90;
           this.leftkey.scale.setTo(1.2);
           this.leftkey.onInputDown.add(function() { leftPressed=1; }, this);
 
-          this.rightkey = game.add.button(490, 810, 'cursorbutton', this.resetRightClick, this, 2, 1, 0);
+          this.rightkey = game.add.button(470, 810, 'cursorbutton', this.resetRightClick, this, 2, 1, 0);
           this.rightkey.anchor.setTo(0.5);
           this.rightkey.angle = 90;
           this.rightkey.scale.setTo(1.2);
@@ -225,15 +225,17 @@ var PlayState = {
                // console.log(String(temp) +'-- 4'); 
           }
 
-          this.game.physics.arcade.collide(this.ball, mazeGroup);
+          this.game.physics.arcade.overlap(this.ball, mazeGroup);
           this.game.physics.arcade.overlap(this.ball, this.finalTile, this.gameOver, null, this);
-          // temp+=1;
+
+          // firedb.database().ref('seed').on('value', function(snapshot) { this.gameOver });
      },
      gameOver: function(){
           firedb.database().ref('seed').remove();
-          this.ball.destroy();
           alert('You Won');
-          window.location.reload(true);
+          // this.ball.destroy();
+          document.location.reload(true);
+          // game.state.start('GameState');
      },
 }
 game.state.add('GameState', GameState);
