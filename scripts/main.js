@@ -225,7 +225,7 @@ var PlayState = {
                // console.log(String(temp) +'-- 4'); 
           }
 
-          this.game.physics.arcade.overlap(this.ball, mazeGroup);
+          this.game.physics.arcade.collide(this.ball, mazeGroup);
           this.game.physics.arcade.overlap(this.ball, this.finalTile, this.gameOver, null, this);
 
           // firedb.database().ref('seed').on('value', function(snapshot) { this.gameOver });
