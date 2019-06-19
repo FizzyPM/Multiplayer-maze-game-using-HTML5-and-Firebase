@@ -6,40 +6,9 @@ var mazeHeight = 32;
 var tileSize = 20;
 var mazeGroup;
 var upPressed = 0, downPressed = 0, leftPressed = 0, rightPressed = 0;
-var keyOrder = [];
 // var temp=0;
 // var mazeGraphics;
 
-// class Stack { 
-  
-//      // Array is used to implement stack 
-//      constructor() 
-//      { 
-//          this.items = []; 
-//      } 
-   
-//      push(element) 
-// { 
-//     // push element into the items 
-//     this.items.push(element); 
-// } 
-// pop(element) 
-// { 
-//      this.items.splice( this.items.indexOf(String(element)), 1 ); 
-// } 
-// peek() 
-// { 
-//     // return the top most element from the stack 
-//     // but does'nt delete it. 
-//     return this.items[this.items.length - 1]; 
-// } 
-// isEmpty() 
-// { 
-//     // return true if stack is empty 
-//     return this.items.length == 0; 
-// } 
-//  } 
-//  var stack = new Stack(); 
 var GameState = {
      preload: function(){
           this.load.image('maze', 'assets/images/maze.png');
@@ -125,28 +94,28 @@ var GameState = {
 
           cursors = game.input.keyboard.createCursorKeys();
           
-          this.upkey = game.add.button(360, 750, 'cursorbutton', this.resetUpClick, this, 2, 1, 0);
+          this.upkey = game.add.button(360, 745, 'cursorbutton', this.resetUpClick, this, 2, 1, 0);
           this.upkey.anchor.setTo(0.5);
           this.upkey.scale.setTo(1.2); 
           this.upkey.onInputDown.add(function() { upPressed=1; }, this);
 
-          this.downkey = game.add.button(360, 860, 'cursorbutton', this.resetDownClick, this, 2, 1, 0);
+          this.downkey = game.add.button(360, 875, 'cursorbutton', this.resetDownClick, this, 2, 1, 0);
           this.downkey.anchor.setTo(0.5);
           this.downkey.angle = 180;
           this.downkey.scale.setTo(1.2);
           this.downkey.onInputDown.add(function() { downPressed=1; }, this);
 
-          this.leftkey = game.add.button(240, 805, 'cursorbutton', this.resetLeftClick, this, 2, 1, 0);
+          this.leftkey = game.add.button(230, 810, 'cursorbutton', this.resetLeftClick, this, 2, 1, 0);
           this.leftkey.anchor.setTo(0.5);
           this.leftkey.angle = -90;
           this.leftkey.scale.setTo(1.2);
-          this.leftkey.onInputDown.add(function() { leftPressed=3; }, this);
+          this.leftkey.onInputDown.add(function() { leftPressed=1; }, this);
 
-          this.rightkey = game.add.button(480, 805, 'cursorbutton', this.resetRightClick, this, 2, 1, 0);
+          this.rightkey = game.add.button(490, 810, 'cursorbutton', this.resetRightClick, this, 2, 1, 0);
           this.rightkey.anchor.setTo(0.5);
           this.rightkey.angle = 90;
           this.rightkey.scale.setTo(1.2);
-          this.rightkey.onInputDown.add(function() { rightPressed=4; }, this);
+          this.rightkey.onInputDown.add(function() { rightPressed=1; }, this);
           // console.log(this.ball); 
 
      },
@@ -163,7 +132,7 @@ var GameState = {
           rightPressed = 0;
      },
      update: function(){
-          // console.log(cursors.up);
+          // console.log(String(this.game.input.pointer1.isDown)+ ' ' + String(this.game.input.pointer2.isDown));
           this.ball.body.velocity.x = 0;
           this.ball.body.velocity.y = 0;
           if (cursors.up.isDown || upPressed === 1){
@@ -183,28 +152,12 @@ var GameState = {
                // console.log(String(temp) +'-- 4'); 
           }
 
-          // console.log(this.ball.body.velocity.x + ' ' + this.ball.body.velocity.y );
-          // cursors.up.onDown.add(function() { stack.push('up'); }, this);
-          // cursors.down.onDown.add(function() { stack.push('down'); }, this);
-          // cursors.left.onDown.add(function() { stack.push('left'); }, this);
-          // cursors.right.onDown.add(function() { stack.push('right'); }, this);
-          // // console.log(stack.peek());
-          // if(stack.peek() == 'up')  this.ball.body.velocity.y = -250;
-          // else if(stack.peek() == 'down')  this.ball.body.velocity.y = 250;
-          // else if(stack.peek() == 'left')  this.ball.body.velocity.x = -250;
-          // else if(stack.peek() == 'right')  this.ball.body.velocity.x = 250;
-          // cursors.up.onUp.add(function() { stack.pop('up'); }, this);
-          // cursors.down.onUp.add(function() { stack.pop('down'); }, this);
-          // cursors.left.onUp.add(function() { stack.pop('left'); }, this);
-          // cursors.right.onUp.add(function() { stack.pop('right'); }, this);
-          
-
-
           this.game.physics.arcade.collide(this.ball, mazeGroup);
           this.game.physics.arcade.overlap(this.ball, this.finalTile, this.gameOver, null, this);
           // temp+=1;
      },
      gameOver: function(){
+          this.ball.destroy();
           alert('You Won');
           window.location.reload(true);
      },
