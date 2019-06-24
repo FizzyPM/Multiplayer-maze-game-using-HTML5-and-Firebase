@@ -152,6 +152,7 @@ var PlayState = {
      preload: function(){
           this.load.image('ball', 'assets/images/ball2.png');
           this.load.spritesheet('cursorbutton', 'assets/images/arrowkey.png', 70, 70);
+          this.load.spritesheet('gamepad', 'assets/gamepad/gamepad_spritesheet.png', 100, 100);
      },
      create: function(){
           this.finalTile = this.game.add.sprite(mazeHeight*tileSize+40, mazeWidth*tileSize-100, 'maze');
@@ -165,31 +166,40 @@ var PlayState = {
           // console.log(this.ball.width)
           // this.ball.tint = Math.random() * 0xffffff;
 
+
+          if (game.device.desktop == false) {
+               this.gamepad = this.game.plugins.add(Phaser.Plugin.VirtualGamepad);
+               this.joystick = this.gamepad.addJoystick(370, 800, 1.2, 'gamepad');
+               // this.button = this.gamepad.addButton(240, 800, 1.0, 'gamepad');
+          }
+
+          else{
           cursors = game.input.keyboard.createCursorKeys();
           
-          this.upkey = game.add.button(360, 765, 'cursorbutton', this.resetUpClick, this, 2, 1, 0);
+          this.upkey = game.add.button(360, 755, 'cursorbutton', this.resetUpClick, this, 2, 1, 0);
           this.upkey.anchor.setTo(0.5);
-          this.upkey.scale.setTo(1.2); 
+          // this.upkey.scale.setTo(1.2); 
           this.upkey.onInputDown.add(function() { upPressed=1; }, this);
 
-          this.downkey = game.add.button(360, 855, 'cursorbutton', this.resetDownClick, this, 2, 1, 0);
+          this.downkey = game.add.button(360, 845, 'cursorbutton', this.resetDownClick, this, 2, 1, 0);
           this.downkey.anchor.setTo(0.5);
           this.downkey.angle = 180;
-          this.downkey.scale.setTo(1.2);
+          // this.downkey.scale.setTo(1.2);
           this.downkey.onInputDown.add(function() { downPressed=1; }, this);
 
-          this.leftkey = game.add.button(250, 810, 'cursorbutton', this.resetLeftClick, this, 2, 1, 0);
+          this.leftkey = game.add.button(270, 800, 'cursorbutton', this.resetLeftClick, this, 2, 1, 0);
           this.leftkey.anchor.setTo(0.5);
           this.leftkey.angle = -90;
-          this.leftkey.scale.setTo(1.2);
+          // this.leftkey.scale.setTo(1.2);
           this.leftkey.onInputDown.add(function() { leftPressed=1; }, this);
 
-          this.rightkey = game.add.button(470, 810, 'cursorbutton', this.resetRightClick, this, 2, 1, 0);
+          this.rightkey = game.add.button(450, 800, 'cursorbutton', this.resetRightClick, this, 2, 1, 0);
           this.rightkey.anchor.setTo(0.5);
           this.rightkey.angle = 90;
-          this.rightkey.scale.setTo(1.2);
+          // this.rightkey.scale.setTo(1.2);
           this.rightkey.onInputDown.add(function() { rightPressed=1; }, this);
           // console.log(this.ball); 
+          }
 
      },
      resetUpClick: function(){
@@ -206,27 +216,44 @@ var PlayState = {
      },
      update: function(){
           // console.log(String(this.game.input.pointer1.isDown)+ ' ' + String(this.game.input.pointer2.isDown));
-          this.ball.body.velocity.x = 0;
-          this.ball.body.velocity.y = 0;
-          if (cursors.up.isDown || upPressed === 1){
-               this.ball.body.velocity.y = -250;
-               // console.log(String(temp) +'-- 1');
-          }
-          if (cursors.down.isDown || downPressed === 1){
-               this.ball.body.velocity.y = 250;
-               // console.log(String(temp) +'-- 2');
-          }
-          if (cursors.left.isDown || leftPressed === 1){
-               this.ball.body.velocity.x = -250;
-               // console.log(String(temp) +'-- 3');
-          }
-          if (cursors.right.isDown || rightPressed === 1){
-               this.ball.body.velocity.x = 250;
-               // console.log(String(temp) +'-- 4'); 
-          }
+          if (game.device.desktop == false) {
+               if (this.joystick.properties.inUse) {
+                   this.ball.angle = this.joystick.properties.angle;
+                   this.ball.lastAngle = this.ball.angle;
+               } else {
+                   this.ball.angle = this.ball.lastAngle;
+               }
+               this.ball.body.velocity.x = 5 * this.joystick.properties.x;
+               this.ball.body.velocity.y = 5 * this.joystick.properties.y;
 
+               // if (this.button.isDown) {
+               //      this.ball.body.velocity.x = 0;
+               //      this.ball.body.velocity.y = 0;
+               // }
+          }
+          else{
+               this.ball.body.velocity.x = 0;
+               this.ball.body.velocity.y = 0;
+               if (cursors.up.isDown || upPressed === 1){
+                    this.ball.body.velocity.y = -250;
+                    // console.log(String(temp) +'-- 1');
+               }
+               if (cursors.down.isDown || downPressed === 1){
+                    this.ball.body.velocity.y = 250;
+                    // console.log(String(temp) +'-- 2');
+               }
+               if (cursors.left.isDown || leftPressed === 1){
+                    this.ball.body.velocity.x = -250;
+                    // console.log(String(temp) +'-- 3');
+               }
+               if (cursors.right.isDown || rightPressed === 1){
+                    this.ball.body.velocity.x = 250;
+                    // console.log(String(temp) +'-- 4'); 
+               }
+          }
           this.game.physics.arcade.collide(this.ball, mazeGroup);
           this.game.physics.arcade.overlap(this.ball, this.finalTile, this.gameOver, null, this);
+
 
           // firedb.database().ref('seed').on('value', function(snapshot) { this.gameOver });
      },
